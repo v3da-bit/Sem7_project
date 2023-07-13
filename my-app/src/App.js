@@ -6,12 +6,13 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import { createContext, useEffect, useReducer, useState } from 'react';
 import { initialState, Reducer } from './reducer/Reducer';
-import Cookies from 'js-cookie';
+
 
 export const UserContext = createContext()
 
 function App() {
   const [state, dispatch] = useReducer(Reducer, initialState)
+  
   
 
 

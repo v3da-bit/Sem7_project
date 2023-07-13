@@ -2,30 +2,53 @@ import Cookies from 'js-cookie'
 import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserContext } from '../App'
+import axios from 'axios'
+import { ToastContainer, toast } from 'react-toastify'
 
 
-function NAvBar({value}) {
+function NAvBar() {
   const [style1, setstyle] = useState("block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent")
   const navigate = useNavigate()
   const { state, dispatch } = useContext(UserContext)
-  // const cookies=Cookies.get('userData')
-  // if (cookies!='') {
-  //   console.log('pont it');
-  //   dispatch({ type: "USER", payload: true })
-  // }else{
-  //   dispatch({ type: "USER", payload: false })
-  //   console.log('not getting pont')
-  // }
-  console.log(state)
+  // const [finalState,setFinalState]=useState(0)
+  const cookies=Cookies.get('userData')
+  if (cookies!=undefined) {
+    console.log('pont it');
+    dispatch({ type: "USER", payload: true })
+    // setFinalState(true)
+  }else{
+    dispatch({ type: "USER", payload: false })
+    console.log('not getting point')
+    // setFinalState(false)
+  }
+  
   const RenderNavBar = () => {
     if (state) {
       return (
         <>
           
           <li>
-            <button className='btn btn-primary'><a href='' onClick={() => {
+            <button className='btn btn-primary'><a href='' onClick={async() => {
               
-              // navigate('/logout')
+                const token = Cookies.get('userData')
+                const headers = { 'token': token };
+               const response= await axios.get('http://localhost:3000/logout',{headers}).then((res)=>{
+                    console.log(res)
+                    setTimeout(() => {
+                        toast.success("successfully logout");
+                      }, 200);        
+                    Cookies.remove('userData')
+                    localStorage.removeItem('userData')
+                    
+                    localStorage.removeItem('state')
+                    dispatch({ type: "USER", payload: false })
+                    // setFinalState(false)
+                    navigate('/login')
+                }).catch((err)=>{
+                    console.log(err)
+                })
+            
+              
             }} className={style1}>logOut</a>
             </button>
           </li>
@@ -39,7 +62,7 @@ function NAvBar({value}) {
 
           <li>
             <a href='' onClick={() => {
-              // navigate('/login')
+              navigate('/login')
 
             }} className={style1}>Login</a>
           </li>
@@ -55,6 +78,7 @@ function NAvBar({value}) {
   return (
 
     <nav className="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 left-0">
+      <ToastContainer/>
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="https://flowbite.com/" className="flex items-center">
           <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 mr-3" alt="Flowbite Logo" />
@@ -69,18 +93,18 @@ function NAvBar({value}) {
           <li>
             <a type='button' href='' onClick={() => {
     
-              // navigate('/')
+              navigate('/')
             }} className={style1} aria-current="page">Home</a>
           </li>
           <li>
             <a href='' onClick={() => {
-              // navigate('/about')
-            }} className={style1}>AboutMe</a>
+              navigate('/about')
+            }} className={style1}>Profile</a>
           </li>
           <li>
             <a href='' onClick={() => {
-              // navigate('/contact')
-            }} className={style1}>Contact</a>
+              navigate('/contact')
+            }} className={style1}>ContactUs   </a>
           </li>
 
             <RenderNavBar />
