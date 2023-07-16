@@ -1,10 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { BrowserRouter, Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import Cookies from 'js-cookie'
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
-import { ToastContainer, toast } from 'react-toastify';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+import * as React from 'react';
 import PropTypes from 'prop-types';
 import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -27,17 +21,20 @@ import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
-function createData(key,id,partyName,totalVotes ) {
+function createData(key,Id,partyName,vote) {
   return {
-    id,
+    Id,
     partyName,
-    totalVotes,
-   
+    vote
   };
 }
 
-
+// let rows = [
+  
+// ];
 
 
 function descendingComparator(a, b, orderBy) {
@@ -72,26 +69,29 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+
 const headCells = [
-    {
-        id: 'id',
-        numeric: true,
-        disablePadding: true,
-        label: 'ID',
-    },    
   {
-    id: 'name',
-    numeric: false,
-    disablePadding: true,
-    label: 'Party Name',
+    id: 'Id',
+    numeric: true,
+    disablePadding: false,
+    label: 'ID',
+    left:true
   },
   {
-    id: 'votes',
+    id: 'partyName',
+    numeric: false,
+    disablePadding: false,
+    label: 'Party Name',
+    center:true
+  },
+  {
+    id: 'vote',
     numeric: true,
     disablePadding: false,
     label: 'Votes',
+    right:true
   },
- 
 ];
 
 function EnhancedTableHead(props) {
@@ -107,7 +107,7 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
+            align={headCell.left?'left':headCell.center?'center':'right'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -194,48 +194,52 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function Dashboard() {
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('calories');
-  const [selected, setSelected] = useState([]);
-  const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [num, changenum] = useState(0)
-  const [section, changeSec] = useState('bg-gray-50 dark:bg-gray-900')
-  const [mainDiv, changeMain] = useState(' shadow-black shadow-sm h-96 w-1/2  mx-auto max-w-screen-md ')
-  const [title, changeTitle] = useState('text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white')
-  const [input, changeinp] = useState('bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500')
-  const [theme, changeTheme] = useState(<WbSunnyIcon />)
-  const [parties,setParties]=useState([])
-  const [rows,setRows] = useState([])
+export default function EnhancedTable() {
+  const [rows,setRows]=React.useState([
+  ])
+  const [parties,setparties]=React.useState([])
+  const [format,setFormat]=React.useState([])
+  const [order, setOrder] = React.useState('asc');
+  const [orderBy, setOrderBy] = React.useState('calories');
+  const [selected, setSelected] = React.useState([]);
+  const [page, setPage] = React.useState(0);
+  const [dense, setDense] = React.useState(false);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  
   const getData=async()=>{
     const token = Cookies.get('userData')
     const headers = { 'token': token };
-    const reposnse=await axios('http://localhost:3000/parties',{headers}).then(res=>{
-    setParties(res.data)
+    const response=await axios.get('http://localhost:3000/parties', { headers }).then((res) => {
+      // console.log(res.data);
+
+      if (parties.length===0) {
         
-    }).catch(err=>{
-        console.log(err);
+        setparties(res.data)
+      }
+      
+         
+      
+
     })
-}
-useEffect(()=>{
+  }
+  React.useEffect(()=>{
     getData()
-},[])
-console.log(parties);
-// if (parties) {
-    
-// console.log()
-// parties.map(value=>{
+  },[])
+  
+  React.useEffect(()=>{
+    console.log(parties);
+    let data=[]
 
-//     setRows(createData(value.Id,value.Id,value.partyName,value.vote))
-//  })
-// }  
-
-   
-
-
-// console.log(parties);
+    parties.map(value=>{
+      data.push(createData(value.Id,value.Id,value.partyName,value.vote))
+      
+    })
+    setRows(data)
+  },[parties])
+  
+  
+  
+  
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -290,15 +294,22 @@ console.log(parties);
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const visibleRows = React.useMemo(
+    
+      
+    
+    const visibleRows = React.useMemo(
     () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [order, orderBy, page, rowsPerPage],
-  );
-
+    
+        stableSort(rows, getComparator(order, orderBy)).slice(
+          page * rowsPerPage,
+          page * rowsPerPage + rowsPerPage,
+        ),
+      [order, orderBy, page, rowsPerPage,rows],
+    
+      
+      );
+      console.log(visibleRows)
+      
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -317,11 +328,11 @@ console.log(parties);
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
-            <TableBody>
+            <TableBody >
               {visibleRows.map((row, index) => {
                 const isItemSelected = isSelected(row.name);
                 const labelId = `enhanced-table-checkbox-${index}`;
-
+                
                 return (
                   <TableRow
                     hover
@@ -333,16 +344,23 @@ console.log(parties);
                     selected={isItemSelected}
                     sx={{ cursor: 'pointer' }}
                   >
-                   
+                     <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      align='left'
+                    >
+                      {row.Id}
+                    </TableCell>
                     <TableCell
                       component="th"
                       id={labelId}
                       scope="row"
-                      padding="none"
+                      align='center'
                     >
-                      {row.name}
+                      {row.partyName}
                     </TableCell>
-                    <TableCell align="right">{row.calories}</TableCell>
+                    <TableCell align="right">{row.vote}</TableCell>
                     
                   </TableRow>
                 );
@@ -376,15 +394,3 @@ console.log(parties);
     </Box>
   );
 }
-
-
-// function Dashboard() {
-
-//     return (
-//         <section className={section}>
-            
-//         </section>
-//     )
-// }
-
-// export default Dashboard
