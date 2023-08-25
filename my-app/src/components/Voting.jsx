@@ -4,7 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import image from './images/bjp.png'
 import { Button } from '@mui/material';
-import { state } from '../data/State';
+import  state  from '../data/StateData.json';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import bjp from './images/bjp.png'
@@ -13,45 +13,48 @@ import aap from './images/51YCqhDhqIS.jpg'
 import ysrcp from './images/ysrcp.png'
 import tdp from './images/TDP-3.jpg'
 import cpm from './images/CPIM-Flag-Image.jpg'
+import ndpp from './images/ndpp.png'
+import ncc from './images/ncc.png'
+import ncp from './images/ncp.jpg'
+import mnf from './images/mnf.jpg'
+import shs from './images/shs.png'
+import tmc from './images/tmc.webp'
 import { useNavigate } from 'react-router-dom';
 
 
 
-function Voting({voteDiv,mainDiv,mainTitle,title,finalState}) {
-    const navigate=useNavigate()
+function Voting({ voteDiv, mainDiv, mainTitle, title, finalState }) {
+    const navigate = useNavigate()
     const [party, setParty] = useState({
         partyName: '',
         Id: ''
     })
-    const [parties,setParties]=useState([])
+    // console.log(state);
+    const [parties, setParties] = useState([])
     const getState = async () => {
         const token = Cookies.get('userData')
         const headers = { 'token': token };
         const response = await axios.get('http://localhost:3000/state', { headers }).then((res) => {
-            const {state,isVoted}=res.data
-            if(isVoted==true){
-                document.getElementById('mainDiv').style.display = 'none'
-                document.getElementById('afterVote').style.display = 'block'
-            }
-            localStorage.setItem('state',state)
             
-            
+            localStorage.setItem('state', state)
+
+
         })
     }
-    useEffect(()=>{
+    useEffect(() => {
         getState()
-    },[])
+    }, [])
 
-    useEffect(()=>{
+    useEffect(() => {
         if (finalState) {
             state.forEach((value) => {
                 if (value.state === finalState) {
                     setParties(value.parties)
                 }
             })
-           
+
         }
-    },[finalState])
+    }, [finalState])
     
     console.log(parties)
     const save = async (e) => {
@@ -61,15 +64,35 @@ function Voting({voteDiv,mainDiv,mainTitle,title,finalState}) {
         const response = await axios.post('http://localhost:3000/voted', party, { headers }).then(() => {
             document.getElementById('mainDiv').style.display = 'none'
             document.getElementById('afterVote').style.display = 'block'
+
             setTimeout(() => {
                 toast.success("Your Vote has been Submitted");
             }, 200);
-            
-        }).catch(()=>{
+            const response = axios.get('http://localhost:3000/state', { headers }).then((res) => {
+        
+            const { state, email, userName, isVoted } = res.data
+            if (isVoted == true) {
+                const mail = async () => {
+                    document.getElementById('mainDiv').style.display = 'none'
+                    document.getElementById('afterVote').style.display = 'block'
+                    const mail = await axios.post('http://localhost:3000/mail',
+                        { state, email, userName }
+                        , { headers }).then(() => {
+                            setTimeout(() => {
+                                toast.success("Confirmation Code has been to your Registered Email Please Check It Out");
+                            }, 200);
+                        })
+                }
+                mail()
+                
+            }
+        })
+
+        }).catch(() => {
             setTimeout(() => {
                 toast.error("There is some Problem from our side!");
             }, 200);
-    
+
         })
     }
     const cancel = () => {
@@ -131,6 +154,30 @@ function Voting({voteDiv,mainDiv,mainTitle,title,finalState}) {
                                     return <div className='flex items-center justify-end'>
                                         <img src={cpm} alt="" className='h-24 w-28 rounded-lg' />
                                     </div>
+                                }else if(value.id===9){
+                                    return <div className='flex items-center justify-end'>
+                                        <img src={tmc} alt="" className='h-24 w-28 rounded-lg' />
+                                    </div>
+                                }else if(value.id===10){
+                                    return <div className='flex items-center justify-end'>
+                                        <img src={ncc} alt="" className='h-24 w-28 rounded-lg' />
+                                    </div>
+                                }else if(value.id===12){
+                                    return <div className='flex items-center justify-end'>
+                                        <img src={shs} alt="" className='h-24 w-28 rounded-lg' />
+                                    </div>
+                                }else if(value.id===13){
+                                    return <div className='flex items-center justify-end'>
+                                        <img src={ncp} alt="" className='h-24 w-28 rounded-lg' />
+                                    </div>
+                                }else if(value.id===15){
+                                    return <div className='flex items-center justify-end'>
+                                        <img src={mnf} alt="" className='h-24 w-28 rounded-lg' />
+                                    </div>
+                                }else if(value.id===16){
+                                    return <div className='flex items-center justify-end'>
+                                        <img src={ndpp} alt="" className='h-24 w-28 rounded-lg' />
+                                    </div>
                                 }
                             })()}
 
@@ -155,17 +202,17 @@ function Voting({voteDiv,mainDiv,mainTitle,title,finalState}) {
 
             </div>
             <div id='afterVote' className={mainTitle} style={{
-                display:"none"
+                display: "none"
             }}>
                 <h1>Your vote has been Submitted</h1>
                 <h1>Thanks for Voting</h1>
-                <h1>Check out the Results at <a href="" onClick={()=>{
+                <h1>Check out the Results at <a href="" onClick={() => {
                     navigate('/dashboard')
                 }} style={{
-                    color:'blue',
+                    color: 'blue',
                 }}><u>DashBoard</u></a></h1>
-                </div>
-                
+            </div>
+
         </div>
 
     )

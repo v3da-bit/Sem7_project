@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         require:true
     },
+    confirmationCode:{
+        type:String,
+        require:true
+    },
     tokens: [
         {
             token: {
@@ -51,6 +55,10 @@ const userSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now()
+    },
+    isAdmin:{
+        type:Boolean,
+        default:false
     },
     messages: [
         {

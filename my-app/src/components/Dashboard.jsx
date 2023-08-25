@@ -205,6 +205,8 @@ export default function EnhancedTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [topic, changeTitle] = React.useState("mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white")
+   
   
   const getData=async()=>{
     const token = Cookies.get('userData')
@@ -311,7 +313,11 @@ export default function EnhancedTable() {
       console.log(visibleRows)
       
   return (
+    <>
+               
     <Box sx={{ width: '100%' }}>
+    
+    {/* <h2 className={topic}>Contact Us</h2> */}
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
@@ -392,5 +398,6 @@ export default function EnhancedTable() {
         label="Dense padding"
       />
     </Box>
+    </>
   );
 }

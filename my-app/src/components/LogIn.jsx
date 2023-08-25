@@ -14,6 +14,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 function LogIn() {
     const { state, dispatch } = useContext(UserContext)
     const navigate = useNavigate()
+    
     let userToken;
     const [userData, setUserData] = useState({
         phone: "",
@@ -29,6 +30,7 @@ function LogIn() {
 
     useEffect(()=>{
        console.log(localStorage.getItem('state')); 
+       console.log(Cookies.get('userData'));
     },[])
     const handleInputs = (e) => {
         const name = e.target.name
@@ -52,21 +54,29 @@ function LogIn() {
     }
     const postData = async (e) => {
         e.preventDefault()
+        let admin=false
         const response = await axios.post('http://localhost:3000/login', userData, { headers: { "name": "ved" } }).then((res) => {
             console.log(res.data.token)
-            dispatch({ type: "USER", payload: true })
             userToken = res.data.token
+            console.log(res.data);
+            admin=res.data.admin
             setTimeout(() => {
                 toast.success("successfully logged in");
             }, 200);
             Cookies.set("userData", userToken, {
                 expires: new Date(Date.now() + 9999999999),
-                secure: false,
-                sameSite: "strict"
+            
             })
+            console.log(Cookies.get("userData"));
             localStorage.setItem('userData', JSON.stringify(userToken))
-
-            navigate('/')
+            localStorage.setItem('admin',JSON.stringify(admin))
+            if(admin){
+                dispatch({ type: "ADMIN", payload: true})
+                navigate('/admin')
+            }else{
+                dispatch({ type: "USER", payload: true })
+                navigate('/')
+            }
             return res
 
         }).catch(err => {

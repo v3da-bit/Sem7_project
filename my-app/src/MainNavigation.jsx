@@ -11,6 +11,7 @@ import ContactUs from './components/ContactUs';
 import Home from './components/Home';
 import ErrorPage from './components/ErrorPage';
 import Dashboard from './components/Dashboard';
+import AdminPage from './components/AdminPage';
 
 
 
@@ -19,7 +20,7 @@ function MainNavigation() {
     let valid=null
     const Redirect=<Navigate to={"/login"} />
     const token = Cookies.get('userData')
-    console.log(token==undefined)
+    console.log(token)
     if (token!=undefined) {
       valid=true
       
@@ -29,10 +30,7 @@ function MainNavigation() {
     }
   
   
-    // if(path.pathname==='/'){
-    //     console.log("the if condition")
-    //     navigate('/signup')
-    // }
+   
     console.log(valid);
   return (
     <Routes>
@@ -45,6 +43,7 @@ function MainNavigation() {
         <Route path='/contact' element={valid?<ContactUs/>:Redirect}/>
         <Route path='/dashboard' element={valid?<Dashboard/>:Redirect}/>
         <Route path='/' element={valid?<Home/>:Redirect}/>
+        <Route path='/admin' element={valid?<AdminPage/>:Redirect}/>
         
         
         
