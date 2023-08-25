@@ -13,12 +13,12 @@ import aap from './images/51YCqhDhqIS.jpg'
 import ysrcp from './images/ysrcp.png'
 import tdp from './images/TDP-3.jpg'
 import cpm from './images/CPIM-Flag-Image.jpg'
-import ndpp from './images/ndpp.png'
-import ncc from './images/ncc.png'
+import ndpp from './images/ndpp.jpg'
+import ncc from './images/ncc.jpg'
 import ncp from './images/ncp.jpg'
 import mnf from './images/mnf.jpg'
 import shs from './images/shs.png'
-import tmc from './images/tmc.webp'
+import tmc from './images/tmc.png'
 import { useNavigate } from 'react-router-dom';
 
 
