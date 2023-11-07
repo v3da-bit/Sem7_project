@@ -6,12 +6,15 @@ import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Voting from './Voting';
+import FaceDetect,{obj} from './FaceDetect';
 
 
 function Home() {
+
     const [finalState,setFinalState]=useState('')
     const [userData, setUserData] = useState({
-        voter: ''
+        voter: '',
+        faceResult:{}
     });
     const [num, changenum] = useState(0)
     const [section, changeSec] = useState('bg-gray-50 dark:bg-gray-900')
@@ -27,7 +30,9 @@ function Home() {
     const handleInputs = (e) => {
         const name = e.target.name
         const value = e.target.value
-        setUserData({ ...userData, [name]: value })
+        setUserData({ voter:value,
+            faceResult:obj
+        })
     }
     const checkVoter = async () => {
         const token = Cookies.get('userData')
@@ -79,7 +84,7 @@ function Home() {
             }).catch(err => {
                 console.log(err)
                 setTimeout(() => {
-                    toast.error('Voter Id already present or Invalid')
+                    toast.error('Voter Id already present or Invalid or face already registered')
                 }, 300)
             })
         } else {
@@ -97,6 +102,7 @@ function Home() {
                 <div className={mainDiv} id='voterId' style={{
                     display: 'none'
                 }}>
+                    <FaceDetect/>
                     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                         <h1 className={title}>
                             Enter Your Voter Id associated with your voting card

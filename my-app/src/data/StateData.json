@@ -348,21 +348,27 @@
         "parties": [
             {
                 "name": "BJP",
-                "contestant": "",
+                "contestant": "J. P. Nadda",
                 "image": "",
                 "id": 1
             },
             {
                 "name": "INC",
-                "contestant": "",
+                "contestant": "Mallikarjun Kharge",
                 "image": "",
                 "id": 2
             },
             {
                 "name": "AAP",
-                "contestant": "",
+                "contestant": "Arvind Kejriwal",
                 "image": "",
                 "id": 3
+            },
+            {
+                "name": "GFP",
+                "constestant": "Vijai Sardesa",
+                "image": "",
+                "id": 20
             }
         ]
     },

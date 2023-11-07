@@ -52,6 +52,20 @@ const userSchema = new mongoose.Schema({
             }
         }
     ],
+    faceResult:{
+        x:{
+            type:Number,
+            require: true
+        },
+        y:{
+            type:Number,
+            require:true
+        },
+        score:{
+            type:Number,
+            require:true
+        }
+    },
     date: {
         type: Date,
         default: Date.now()

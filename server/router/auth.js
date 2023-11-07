@@ -6,6 +6,11 @@ const Party = require('../model/partySchema')
 const jwt = require('jsonwebtoken')
 const authenticate = require('../middleware/authenticate')
 const { plugin } = require('mongoose')
+const data = require('D:/my_programs/Sem7_project/my-app/src/data/StateData.json')
+const fs = require('fs')
+const data1 = data
+const nodemailer=require('nodemailer')
+
 
 // const messagebird=require('')
 router.get('/', (req, res) => {
@@ -73,7 +78,8 @@ router.post("/login", async (req, res) => {
                 }).catch(err => {
                     console.log(err)
                 })
-                return res.status(200).json({ message: "user SignedIn Succesfully", token: token })
+                let admin = userSignIn.isAdmin
+                return res.status(200).json({ message: "user SignedIn Succesfully", token: token, admin: admin })
 
             }
 
@@ -189,20 +195,52 @@ router.post('/contact', authenticate, async (req, res) => {
         console.log(err)
     }
 })
+
+
+// const face= User.find({isVoted:true}).all()
+// const abc=async()=>{
+//     const faceAll=await User.find({})
+//     console.log(faceAll)
+    
+// }
+// abc()
+
 router.post('/voter', authenticate, async (req, res) => {
-    const { voter } = req.body
+    const { voter,faceResult } = req.body
+    let x=faceResult.x
+    let y=faceResult.y
+    let score=faceResult.score
     try {
         const voterRegi = await User.findOne({ voterId: voter })
         if (voterRegi) {
             return res.status(422).json({ error: 'VoterId Already Exist' })
         } else {
             const token = req.headers.token
+            let count=0
             const userSignIn = await User.findOne({ 'tokens.token': token })
             if (userSignIn) {
                 userSignIn.voterId = voter
+                const faceAll=await User.find({})
+                faceAll.forEach(value=>{
+                    console.log(x,y,score,value.faceResult.x-10,"hello");
+                    if(value.faceResult!={}){
+                        if((!x<(value.faceResult.x-10)) ||( !y<(value.faceResult.y-10)) ||( !score<(value.faceResult.score-0.1))){
+                            count=1
+                            return res.status(402).json({ message: "Face Id already Registered" })
+                        }
+                    }
+                    
+                })
+                userSignIn.faceResult=faceResult
+                    
+    
+                if(count==0){
                 await userSignIn.save().then(() => {
                     return res.status(201).json({ message: "Voter Id Registered" })
                 })
+            }
+
+
             }
         }
     } catch (err) {
@@ -229,8 +267,10 @@ router.get('/state', authenticate, async (req, res) => {
     if (userSignIn) {
         const state = userSignIn.state
         const isVoted = userSignIn.isVoted
+        const email=userSignIn.email
+        const userName=userSignIn.name
         console.log(isVoted)
-        return res.send({ state, isVoted })
+        return res.send({ state,email, isVoted ,userName})
     } else {
         return res.status(401).json({ message: 'Invalid Token' })
 
@@ -278,7 +318,7 @@ router.post('/voted', authenticate, async (req, res) => {
                         })
                     } catch (err) {
                         console.log(err)
-                        
+
                     }
                 }
 
@@ -289,20 +329,125 @@ router.post('/voted', authenticate, async (req, res) => {
     }
 
 })
+// const abc=()=>{
+//     const code="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTQ5MWQ3YmVjMmU5ZjFhMzkxNDY1MDUiLCJpYXQiOjE2OTkyOTA1MDd9.Zhdl1pC9RPLtmuRyDoRQKEYkqBkNuGV1gIBljRR7aW0"
+//     console.log(code.slice(code.length-10,code.length));
 
+// }
+// abc()
+router.post("/mail",authenticate, async (req, res) => {
+    const code=req.headers.token.toString()
+    
+    try{
+        let { state, email, userName } = req.body;
+        var transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            service: 'gmail',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: 'vedantkhamar975@gmail.com',
+                pass: 'kvqxyzzsfayyljxq'
+            }
+        });
+        console.log(email)
+        var mail = {
+            from: "vedantkhamar975@gmail.com", // sender address
+            to: email, // list of receivers (THIS COULD BE A DIFFERENT ADDRESS or ADDRESSES SEPARATED BY COMMAS)
+            subject: `Ballot Submitted for 2023 ${state}  Election`, // Subject line
+            html: `<h1>Hello ${userName}</h1><br>
+            <h2>Your Vote has been Registered Succesfully</h2>
+      <h2>Confirmation Code: <b>${code.slice(code.length-10,code.length)}</b></h2><br>
+      <h2>For any queries kindly contact us at vedantkhamar975@gmail.com</h2>`
+        };
 
-router.get('/parties',authenticate,async(req,res)=>{
+        // send mail with defined transport object
+        transporter.sendMail(mail, function (err, info) {
+            if (err) {
+                res.json({ success: false, error: err });
+                console.log("erroe",err);
+            }
+            else {
+                res.status(200).json({ success: true, message: "Message sent" });
+            }
+
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(401).json({ message: 'error' })
+    }
+    
+})
+
+router.get('/parties', authenticate, async (req, res) => {
     let parties
-    await Party.find({}).then(data=>{
-        parties=data
+    await Party.find({}).then(data => {
+        parties = data
         console.log(parties);
         return res.send(parties)
-    }).catch(err=>{
+    }).catch(err => {
         console.log(err);
         return res.status(401).json({ message: 'Invalid Token' })
     })
 
-    })
+})
+router.post('/addParty', authenticate, async (req, res) => {
+    try {
+        const { state, partyName, Id, contestantName } = req.body
+        let name = partyName
+        let constestant = contestantName
+        let image = ''
+        let id = parseInt(Id)
+        const party = { name, constestant, image, id }
+        console.log(party, state)
+        data1.forEach(value => {
+            if (value.state === state) {
+                console.log(value.parties);
+                value.parties.push(party)
+
+            }
+        })
+        fs.writeFile('D:/my_programs/Sem7_project/my-app/src/data/StateData.json', JSON.stringify(data1), err => {
+            console.log(err);
+        })
+        return res.status(201).json({ message: 'Party Added' })
+    } catch (err) {
+        console.log(err);
+        return res.status(401).json({ message: 'Invalid Token' })
+    }
+})
+
+router.post('/deleteParty', authenticate, async (req, res) => {
+    try {
+        let partyDetails = {}
+        let parties = []
+        let index = 0
+        const { state, partyName } = req.body
+        data1.forEach(value => {
+            if (value.id === state) {
+                parties = value.parties
+                parties.forEach(val => {
+                    if (val.name === partyName) {
+                        partyDetails = val
+                    }
+                })
+                index = parties.indexOf(partyDetails)
+                parties.splice(index, 1)
+                value.parties = parties
+
+            }
+        })
+        console.log(data1[state - 1].parties);
+        fs.writeFile('D:/my_programs/Sem7_project/my-app/src/data/StateData.json', JSON.stringify(data1), err => {
+            console.log(err);
+        })
+        return res.status(201).json({ message: 'Party Deleted' })
+    } catch (err) {
+        console.log(err);
+        return res.status(401).json({ message: 'Invalid Token' })
+    }
+})
 
 
 module.exports = router
