@@ -144,5 +144,4 @@ userSchema.methods.contactUs = async function (name, email, phone, subject, mess
 }
 
 const User = mongoose.model('VOTING_SYSTEM', userSchema)
-
 module.exports = User

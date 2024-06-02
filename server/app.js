@@ -16,7 +16,7 @@ app.use(cors({
     origin:'*',
     methods:['GET','POST','PUT','PATCH']
 }))
-app.use(require('./router/auth'))
+app.use(require('./router/auth')) //main file
 
 app.listen(port,()=>{
     console.log(`server is listening ${port}`);
