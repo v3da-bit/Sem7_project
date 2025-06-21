@@ -1,15 +1,19 @@
 const express = require('express')
-const router = express.Router()
+const path = require('path')
+const fs = require('fs')
+const nodemailer = require('nodemailer')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const router = express.Router()
+
 const User = require('../model/userSchema')
 const Party = require('../model/partySchema')
-const jwt = require('jsonwebtoken')
 const authenticate = require('../middleware/authenticate')
-const { plugin } = require('mongoose')
-const data = require('D:/my_programs/Sem7_project/my-app/src/data/StateData.json')
-const fs = require('fs')
+
+let commonPath = path.resolve();
+let stateDataPath = path.join(commonPath, "/data/StateData.json");
+const data = require(stateDataPath)
 const data1 = data
-const nodemailer=require('nodemailer')
 
 
 // const messagebird=require('')
@@ -201,54 +205,54 @@ router.post('/contact', authenticate, async (req, res) => {
 // const abc=async()=>{
 //     const faceAll=await User.find({})
 //     console.log(faceAll)
-    
+
 // }
 // abc()
-let x=10
-console.log(!x<12);
+let x = 10
+console.log(!x < 12);
 router.post('/voter', authenticate, async (req, res) => {
-    const { voter,faceResult } = req.body
-    let x=faceResult.x
-    let y=faceResult.y
-    let score=faceResult.score
+    const { voter, faceResult } = req.body
+    let x = faceResult.x
+    let y = faceResult.y
+    let score = faceResult.score
     try {
         const voterRegi = await User.findOne({ voterId: voter })
         if (voterRegi) {
             return res.status(422).json({ error: 'VoterId Already Exist' })
         } else {
             const token = req.headers.token
-            let count=0
+            let count = 0
             const userSignIn = await User.findOne({ 'tokens.token': token })
             if (userSignIn) {
                 userSignIn.voterId = voter
-                const faceAll=await User.find({})
-                faceAll.forEach(value=>{
-                    console.log(x,y,score,value.faceResult.x,!(x<(value.faceResult.x-10)));
-                    if(value.faceResult!={}&&value.faceResult.x!=undefined&&value.faceResult.y!=undefined&&value.faceResult.score!=undefined){
-                        if (x<value.faceResult.x||y<value.faceResult.y||score<value.faceResult.score) {
-                            if((!(x<(value.faceResult.x-20))) &&( !(y<(value.faceResult.y-20))) &&( (!score<(value.faceResult.score-0.1)))){
-                                count=1
-                                
+                const faceAll = await User.find({})
+                faceAll.forEach(value => {
+                    console.log(x, y, score, value.faceResult.x, !(x < (value.faceResult.x - 10)));
+                    if (value.faceResult != {} && value.faceResult.x != undefined && value.faceResult.y != undefined && value.faceResult.score != undefined) {
+                        if (x < value.faceResult.x || y < value.faceResult.y || score < value.faceResult.score) {
+                            if ((!(x < (value.faceResult.x - 20))) && (!(y < (value.faceResult.y - 20))) && ((!score < (value.faceResult.score - 0.1)))) {
+                                count = 1
+
                                 return res.status(402).json({ message: "Face Id already Registered" })
                             }
-                        }else{
-                            if((!(x>(value.faceResult.x+20))) &&( !(y>(value.faceResult.y+20))) &&( !(score>(value.faceResult.score+0.1)))){
-                                count=1
+                        } else {
+                            if ((!(x > (value.faceResult.x + 20))) && (!(y > (value.faceResult.y + 20))) && (!(score > (value.faceResult.score + 0.1)))) {
+                                count = 1
                                 return res.status(402).json({ message: "Face Id already Registered" })
                             }
                         }
-                        
+
                     }
-                    
+
                 })
-                userSignIn.faceResult=faceResult
-                    
-    
-                if(count==0){
-                await userSignIn.save().then(() => {
-                    return res.status(201).json({ message: "Voter Id Registered" })
-                })
-            }
+                userSignIn.faceResult = faceResult
+
+
+                if (count == 0) {
+                    await userSignIn.save().then(() => {
+                        return res.status(201).json({ message: "Voter Id Registered" })
+                    })
+                }
 
 
             }
@@ -270,6 +274,14 @@ router.get('/voter', authenticate, async (req, res) => {
 
     }
 })
+router.get("/allState", authenticate, async (req, res) => {
+    try {
+        return res.status(200).json({ message: "user SignedIn Succesfully", state: data1 })
+
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal server error' })
+    }
+})
 router.get('/state', authenticate, async (req, res) => {
     const token = req.headers.token
     const userSignIn = await User.findOne({ 'tokens.token': token })
@@ -277,10 +289,10 @@ router.get('/state', authenticate, async (req, res) => {
     if (userSignIn) {
         const state = userSignIn.state
         const isVoted = userSignIn.isVoted
-        const email=userSignIn.email
-        const userName=userSignIn.name
+        const email = userSignIn.email
+        const userName = userSignIn.name
         console.log(isVoted)
-        return res.send({ state,email, isVoted ,userName})
+        return res.send({ state, email, isVoted, userName })
     } else {
         return res.status(401).json({ message: 'Invalid Token' })
 
@@ -345,10 +357,10 @@ router.post('/voted', authenticate, async (req, res) => {
 
 // }
 // abc()
-router.post("/mail",authenticate, async (req, res) => {
-    const code=req.headers.token.toString()
-    
-    try{
+router.post("/mail", authenticate, async (req, res) => {
+    const code = req.headers.token.toString()
+
+    try {
         let { state, email, userName } = req.body;
         var transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
@@ -368,7 +380,7 @@ router.post("/mail",authenticate, async (req, res) => {
             subject: `Ballot Submitted for 2023 ${state}  Election`, // Subject line
             html: `<h1>Hello ${userName}</h1><br>
             <h2>Your Vote has been Registered Succesfully</h2>
-      <h2>Confirmation Code: <b>${code.slice(code.length-10,code.length)}</b></h2><br>
+      <h2>Confirmation Code: <b>${code.slice(code.length - 10, code.length)}</b></h2><br>
       <h2>For any queries kindly contact us at vedantkhamar975@gmail.com</h2>`
         };
 
@@ -376,18 +388,18 @@ router.post("/mail",authenticate, async (req, res) => {
         transporter.sendMail(mail, function (err, info) {
             if (err) {
                 res.json({ success: false, error: err });
-                console.log("erroe",err);
+                console.log("erroe", err);
             }
             else {
                 res.status(200).json({ success: true, message: "Message sent" });
             }
 
         });
-    }catch(err){
+    } catch (err) {
         console.log(err);
         return res.status(401).json({ message: 'error' })
     }
-    
+
 })
 
 router.get('/parties', authenticate, async (req, res) => {
@@ -418,7 +430,7 @@ router.post('/addParty', authenticate, async (req, res) => {
 
             }
         })
-        fs.writeFile('D:/my_programs/Sem7_project/my-app/src/data/StateData.json', JSON.stringify(data1), err => {
+        fs.writeFile(stateDataPath, JSON.stringify(data1), err => {
             console.log(err);
         })
         return res.status(201).json({ message: 'Party Added' })
@@ -449,7 +461,7 @@ router.post('/deleteParty', authenticate, async (req, res) => {
             }
         })
         console.log(data1[state - 1].parties);
-        fs.writeFile('D:/my_programs/Sem7_project/my-app/src/data/StateData.json', JSON.stringify(data1), err => {
+        fs.writeFile(stateDataPath, JSON.stringify(data1), err => {
             console.log(err);
         })
         return res.status(201).json({ message: 'Party Deleted' })

@@ -6,13 +6,14 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { ToastContainer, toast } from 'react-toastify';
-import state from '../data/StateData.json';
+// import state from '../data/StateData.json';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 
 
 function AdminPage() {
+  const [state, setState] = useState([]);
   const [num, changenum] = useState(0)
   const [section, changeSec] = useState('bg-gray-50 dark:bg-gray-900')
   const [mainDiv, changeMain] = useState(' shadow-black grid gap-8 shadow-sm h-auto w-full mx-auto p-8 max-w-screen-md ')
@@ -39,6 +40,18 @@ function AdminPage() {
     const name = e.target.name
     const value = e.target.value
     setUser({ ...user, [name]: value })
+  }
+  useEffect(() => {
+    getAllState()
+  },[])
+  const getAllState = async () => {
+    const token = Cookies.get('userData')
+    const headers = { 'token': token };
+    console.log("headers..", headers);
+    const response = await axios.get('http://localhost:3000/allState', { headers }).then((res) => {
+      console.log("res.data.state...", res.data.state);
+      setState(res.data.state);
+    })
   }
   useEffect(() => {
     if (user2.state) {
@@ -88,6 +101,7 @@ function AdminPage() {
         state: "",
         partyName: ""
       })
+      window.location.reload();
     }).catch(err => {
       setTimeout(() => {
         toast.error("Some Error Occurred");
@@ -137,6 +151,7 @@ function AdminPage() {
       document.getElementById('cancel').style.display = 'none'
       document.getElementById('buttonDiv').style.display = 'flex'
       document.getElementById('addDiv').style.display = 'none'
+      window.location.reload();
       setUser({
         state: "",
         partyName: "",

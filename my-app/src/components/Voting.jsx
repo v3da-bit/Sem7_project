@@ -4,7 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import image from './images/bjp.png'
 import { Button } from '@mui/material';
-import  state  from '../data/StateData.json';
+// import  state  from '../data/StateData.json';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import bjp from './images/bjp.png'
@@ -24,12 +24,12 @@ import { useNavigate } from 'react-router-dom';
 
 
 function Voting({ voteDiv, mainDiv, mainTitle, title, finalState }) {
+    const [state, setState] = useState([]);
     const navigate = useNavigate()
     const [party, setParty] = useState({
         partyName: '',
         Id: ''
     })
-    // console.log(state);
     const [parties, setParties] = useState([])
     const getState = async () => {
         const token = Cookies.get('userData')
@@ -41,8 +41,17 @@ function Voting({ voteDiv, mainDiv, mainTitle, title, finalState }) {
 
         })
     }
+    const getAllState = async () => {
+        const token = Cookies.get('userData')
+        const headers = { 'token': token };
+        const response = await axios.get('http://localhost:3000/allState', { headers }).then((res) => {
+            console.log("res.data.state...", res.data.state);
+            setState(res.data.state);
+        })
+    }
     useEffect(() => {
         getState()
+        getAllState()
     }, [])
 
     useEffect(() => {
