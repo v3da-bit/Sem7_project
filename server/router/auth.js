@@ -226,25 +226,37 @@ router.post('/voter', authenticate, async (req, res) => {
             if (userSignIn) {
                 userSignIn.voterId = voter
                 const faceAll = await User.find({})
-                faceAll.forEach(value => {
-                    console.log(x, y, score, value.faceResult.x, !(x < (value.faceResult.x - 10)));
-                    if (value.faceResult != {} && value.faceResult.x != undefined && value.faceResult.y != undefined && value.faceResult.score != undefined) {
-                        if (x < value.faceResult.x || y < value.faceResult.y || score < value.faceResult.score) {
-                            if ((!(x < (value.faceResult.x - 20))) && (!(y < (value.faceResult.y - 20))) && ((!score < (value.faceResult.score - 0.1)))) {
-                                count = 1
+                for (const value of faceAll) {
+                    if (
+                        value.faceResult &&
+                        value.faceResult.x !== undefined &&
+                        value.faceResult.y !== undefined &&
+                        value.faceResult.score !== undefined
+                    ) {
+                        console.log(x, y, score, value.faceResult.x, !(x < (value.faceResult.x - 10)));
 
-                                return res.status(402).json({ message: "Face Id already Registered" })
+                        if (x < value.faceResult.x || y < value.faceResult.y || score < value.faceResult.score) {
+                            if (
+                                !(x < value.faceResult.x - 10) &&
+                                !(y < value.faceResult.y - 10) &&
+                                !(score < value.faceResult.score - 0.1)
+                            ) {
+                                count = 1;
+                                return res.status(402).json({ message: "Face Id already Registered" });
                             }
                         } else {
-                            if ((!(x > (value.faceResult.x + 20))) && (!(y > (value.faceResult.y + 20))) && (!(score > (value.faceResult.score + 0.1)))) {
-                                count = 1
-                                return res.status(402).json({ message: "Face Id already Registered" })
+                            if (
+                                !(x > value.faceResult.x + 10) &&
+                                !(y > value.faceResult.y + 10) &&
+                                !(score > value.faceResult.score + 0.1)
+                            ) {
+                                count = 1;
+                                return res.status(402).json({ message: "Face Id already Registered" });
                             }
                         }
-
                     }
-
-                })
+                }
+                    
                 userSignIn.faceResult = faceResult
 
 
